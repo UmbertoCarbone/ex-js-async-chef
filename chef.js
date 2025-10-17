@@ -13,12 +13,40 @@ Essere asincrona (async).
 Utilizzare await per chiamare le API.
 Restituire una Promise con la data di nascita dello chef.
 Gestire gli errori con try/catch */
+
+//🎯 Bonus 1
+/* Attualmente,
+ se la prima richiesta non trova una ricetta,
+  la seconda richiesta potrebbe comunque essere eseguita
+   causando errori a cascata.
+   Modifica getChefBirthday(id)
+    per intercettare eventuali errori prima
+     di fare la seconda richiesta.
+ */
+
 async function getChefBirthday(id) {
-    const ricetta = await fetch(`https://dummyjson.com/recipes/${id}`)
-    const recipe = await ricetta.json()
-    const chefBirthday = await fetch(`https://dummyjseron.com/users/${recipe.userId}`)
-    const chef = await chefBirthday.json()
-    return chef.birthDate;
+    let recipe;
+    try {
+        const ricetta = await fetch(`https://dummyjson.com/recipes/${id}`)
+        recipe = await ricetta.json()
+    } catch (error) {
+        throw new Error(`non recupero la ricetta id${id}`)
+    }
+    if (!recipe) {
+        throw new Error(`ricetta con ${id} non trovata!`)
+    }
+    let chef;
+    try {
+        const chefBirthday = await fetch(`https://dummyjson.com/users/${recipe.userId}`)
+        chef = await chefBirthday.json()
+    } catch (error) {
+        throw new Error(`non recupero la chef id ${id}`)
+    }
+    if (!chef) {
+        throw new Error(`Chef con id ${id} non trovato`)
+    }
+    const DataIT = dayjs(chef.birthDate).format('DD/MM/YYYY')
+    return DataIT
 }
 
 (async () => {
@@ -26,13 +54,13 @@ async function getChefBirthday(id) {
         const birthday = await getChefBirthday(1)
         console.log("data di nascita dello chef", birthday)
     } catch (error) {
-        console.error("errore:", error.message)
+        console.error("errore", error.message)
     } finally {
-        console.log("fine codice")
+        console.log("Fine Codice")
     }
 })()
 
-/*  */ /*  */
+
 
 
 
